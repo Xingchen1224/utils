@@ -2,6 +2,7 @@ import glob
 import time
 import pickle
 import sys
+import datetime
 
 def xingchens_images(dir_name):
     pattern_name = dir_name + '/**/*.[jbptJBPT][pnmiPNMI][gepfGEPF]'
@@ -11,15 +12,27 @@ def xingchens_images(dir_name):
     image_paths.extend(glob.glob(pattern_name,recursive=True))
     return image_paths
 
+def dump_xingchens_images(image_paths, dump_path):
+    with open(dump_path, 'wb') as f:
+        pickle.dump(image_paths, f)
+
+def restore_dumped_paths(dump_path):
+    ret = []
+    with open(dump_path,'rb') as f:
+        ret = pickle.load(f)
+    return ret
+
+def whatTimeIsItNow():
+    return datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
 dir_path = sys.argv[1]
+dump_path = whatTimeIsItNow()+'.pkl'
+
 t1 = time.time()
-data_path = 'data.pkl'
-ret = xingchens_images(dir_path)
+image_paths = xingchens_images(dir_path)
 t2 = time.time()
 
-with open(data_path, 'wb') as f:
-    pickle.dump(ret, f)
-with open(data_path,'rb') as f:
-    ret_new = pickle.load(f)
-print(ret==ret_new)
-print(len(ret),' files using ', round(t2-t1,2),' sec')
+dump_xingchens_images(image_paths, dump_path)
+
+print(image_paths==restore_dumped_paths(dump_path))
+print(len(image_paths),' files using ', round(t2-t1,2),' sec')
